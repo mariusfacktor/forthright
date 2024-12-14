@@ -34,6 +34,10 @@ sum, diff = frc.add_and_sub(8, 2)
 print('%d %d' %(sum, diff)) # -> 10 6
 ```
 
+## Installation
+
+`pip install -i https://test.pypi.org/simple/ forthright==0.0.1`
+
 ## Limitations
 
 You can only pass arguments by value, not by reference. For example, if an argument is a list, the server function will receive a copy of that list. 
