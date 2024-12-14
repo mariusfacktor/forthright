@@ -29,6 +29,8 @@ def unserialize_arguments_server(args_serialized):
 
 
 
+
+
 def client_api_wrapper(url, function_name, kwargs, *args):
 
     headers = {'Content-Type': 'application/octet-stream'}
@@ -38,7 +40,6 @@ def client_api_wrapper(url, function_name, kwargs, *args):
     return_args = unserialize_arguments_client(response.content)
 
     return return_args
-
 
 def remote_call_decorator(func):
 
@@ -50,11 +51,10 @@ def remote_call_decorator(func):
 
     return wrapper
 
-
-
 @remote_call_decorator
 def placeholder_function(url, func_name, *args, **kwargs):
     pass
+
 
 
 
@@ -71,13 +71,13 @@ class base_forthright_client:
             setattr(self.class_ptr, func_name, named_placeholder_function)
 
 
-
 def forthright_client(url):
     # Create new class (because we want to add functions to this class with setattr but not add them to a different forthright_client object)
     dynamic_class = type('forthright_client_dynamic_class', (base_forthright_client,), {})
     # Instantiate this new class into an object and return the object
     forthright_client_obj = dynamic_class(url, dynamic_class)
     return forthright_client_obj
+
 
 
 
@@ -109,26 +109,9 @@ class forthright_server:
             input_args = unserialized[2:]
 
             outputs = self.exported_functions_dict[function_name](*input_args, **input_kwargs)
-
-            if not isinstance(outputs, str) and hasattr(outputs, '__len__'):
-                outputs_serialized = serialize_arguments(*outputs)
-            else:
-                outputs_serialized = serialize_arguments(outputs)
-
+            outputs_serialized = serialize_arguments(outputs)
 
             return Response(outputs_serialized, content_type='application/octet-stream')
 
 
     
-
-
-
-
-
-
-
-
-
-
-
-

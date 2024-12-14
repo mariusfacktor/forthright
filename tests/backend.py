@@ -50,8 +50,13 @@ def optional_input(optional_arg=42):
     return optional_arg
 
 
+# test5 -- argument is a list 
+def input_list(arg_list):
+    return arg_list
 
-frs.export_functions(calculate_values, concat_words, increment_age, optional_input)
+
+
+frs.export_functions(calculate_values, concat_words, increment_age, optional_input, input_list)
 
 
 if __name__ == '__main__':

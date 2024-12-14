@@ -10,7 +10,7 @@ from src.forthright.forthright import forthright_client
 url = 'http://127.0.0.1:8000'
 
 frc = forthright_client(url)
-frc.import_functions('calculate_values', 'concat_words', 'increment_age', 'optional_input')
+frc.import_functions('calculate_values', 'concat_words', 'increment_age', 'optional_input', 'input_list')
 
 
 # test1 -- mixed type input arguments and multiple outputs
@@ -37,5 +37,10 @@ print(older_person.age) # -> 39
 # test4 -- zero input arguments
 default_val = frc.optional_input()
 print(default_val) # -> 42
+
+
+# test5 -- argument is a list 
+output_list = frc.input_list(['this', 'is', 'a', 'list'])
+print(output_list) # -> ['this', 'is', 'a', 'list']
 
 
