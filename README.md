@@ -33,3 +33,10 @@ frc.import_functions('add_and_sub')
 sum, diff = frc.add_and_sub(8, 2)
 print('%d %d' %(sum, diff)) # -> 10 6
 ```
+
+## Limitations
+
+You can only pass arguments by value, not by reference. For example, if an argument is a list, the server function will receive a copy of that list. 
+
+If an argument is a custom object, the class definition must be present in both the client code and the server code. 
+
