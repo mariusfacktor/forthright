@@ -6,6 +6,8 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 from src.forthright.forthright import forthright_server
 
+# from forthright import forthright_server
+
 from flask import Flask
 
 app = Flask(__name__)

@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 from src.forthright.forthright import forthright_client
 
+# from forthright import forthright_client
 
 url = 'http://127.0.0.1:8000'
 
