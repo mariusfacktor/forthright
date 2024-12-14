@@ -1,6 +1,4 @@
 
-from flask import request, Response
-import requests
 import pickle
 from functools import partial, wraps
 import os
@@ -32,6 +30,7 @@ def unserialize_arguments_server(args_serialized):
 
 
 def client_api_wrapper(url, function_name, kwargs, *args):
+    import requests
 
     headers = {'Content-Type': 'application/octet-stream'}
 
@@ -98,6 +97,8 @@ class forthright_server:
 
 
     def initialize_api(self):
+        from flask import request, Response
+
         @self.app.route('/forthright', methods=['PUT'])
         def function_wrapper():
 
