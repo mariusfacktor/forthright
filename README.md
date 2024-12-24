@@ -36,7 +36,7 @@ print('%d %d' %(sum, diff)) # -> 10 6
 
 ## Installation
 
-`pip install -i https://test.pypi.org/simple/ forthright==0.0.1`
+`pip install -i https://test.pypi.org/simple/ forthright==0.0.2`
 
 ## Limitations
 
