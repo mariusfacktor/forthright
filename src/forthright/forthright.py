@@ -127,13 +127,13 @@ class forthright_server:
 
         self.caller_module_name = caller_module_name
 
+        self.initialize_api()
+
 
     def export_functions(self, *funcs):
 
         for func in funcs:
             self.exported_functions_dict[func.__name__] = func
-
-        self.initialize_api()
 
 
     def initialize_api(self):
