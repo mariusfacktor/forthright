@@ -152,7 +152,7 @@ class forthright_server:
             try:
                 outputs = self.exported_functions_dict[function_name](*input_args, **input_kwargs)
             except KeyError:
-                raise KeyError('forthright: %s() not found. Use frs.export_functions(%s)' %(function_name, function_name))
+                raise KeyError('forthright: %s() not found. Use forthright_server.export_functions(%s)' %(function_name, function_name))
 
 
             outputs_serialized = serialize_arguments(outputs)
