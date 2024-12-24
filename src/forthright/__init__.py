@@ -1,5 +1,5 @@
 
-package_version = '0.0.1'
+package_version = '0.0.2'
 __version__ = package_version
 
 # Import submodules
