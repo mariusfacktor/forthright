@@ -44,3 +44,5 @@ You can only pass arguments by value, not by reference. For example, if an argum
 
 If an argument is a custom object, the class definition must be present in both the client code and the server code. 
 
+Warning: This code deserializes pickled data on the server which is unsafe. forthright is only intended for rapid prototyping on a private network. 
+
