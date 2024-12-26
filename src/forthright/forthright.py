@@ -4,6 +4,36 @@ from functools import partial, wraps
 import os
 import io
 import inspect
+import json
+
+
+# https://stackoverflow.com/questions/15721363/preserve-python-tuples-with-json
+class MyJsonEncoder(json.JSONEncoder):
+    def encode(self, obj):
+        def specify_type(item):
+            if isinstance(item, tuple):
+                return {'__tuple__': True, 'items': [specify_type(e) for e in item]}
+            elif isinstance(item, set):
+                return {'__set__': True, 'items': [specify_type(e) for e in item]}
+            elif isinstance(item, list):
+                return [specify_type(e) for e in item]
+            elif isinstance(item, dict):
+                return {key: specify_type(value) for key, value in item.items()}
+            else:
+                return item
+
+        return super(MyJsonEncoder, self).encode(specify_type(obj))
+
+
+def specify_type_hook(obj):
+    if isinstance(obj, (str, int, float, bool, type(None))):
+        return obj
+    elif '__tuple__' in obj:
+        return tuple([specify_type_hook(e) for e in obj['items']])
+    elif '__set__' in obj:
+        return set([specify_type_hook(e) for e in obj['items']])
+    else:
+        return obj
 
 
 # https://stackoverflow.com/questions/50465106/attributeerror-when-reading-a-pickle-file
@@ -55,29 +85,47 @@ def unserialize_arguments_server(caller_module_name, args_serialized):
 
 
 
-def client_api_wrapper(url, caller_module_name, function_name, kwargs, *args):
+
+def client_api_wrapper(url, safe_mode, caller_module_name, function_name, kwargs, *args):
     import requests
 
-    headers = {'Content-Type': 'application/octet-stream'}
+    json_encoder = MyJsonEncoder()
 
-    args_serialized = serialize_arguments(function_name, kwargs, *args)
-    response = requests.put(url, data=args_serialized, headers=headers)
-    return_args = unserialize_arguments_client(caller_module_name, response.content)
 
-    return return_args
+    if safe_mode:
+        headers = {'Content-Type': 'application/json'}
+        data = [function_name, kwargs, *args]
+        args_processed = json_encoder.encode(data)
+
+    else:
+        headers = {'Content-Type': 'application/octet-stream'}
+        args_processed = serialize_arguments(function_name, kwargs, *args)
+
+
+
+    response = requests.put(url, data=args_processed, headers=headers)
+
+    if safe_mode:
+        return_values = json.loads(response.content, object_hook=specify_type_hook)
+
+    else:
+        return_values = unserialize_arguments_client(caller_module_name, response.content)
+
+    return return_values
+    
 
 def remote_call_decorator(func):
 
     @wraps(func)
-    def wrapper(url, caller_module_name, func_name, *args, **kwargs):
+    def wrapper(url, safe_mode, caller_module_name, func_name, *args, **kwargs):
         # pass kwargs as a dict
-        result = client_api_wrapper(url, caller_module_name, func_name, kwargs, *args)
+        result = client_api_wrapper(url, safe_mode, caller_module_name, func_name, kwargs, *args)
         return result
 
     return wrapper
 
 @remote_call_decorator
-def placeholder_function(url, caller_module_name, func_name, *args, **kwargs):
+def placeholder_function(url, caller_module_name, func_name, safe_mode, *args, **kwargs):
     pass
 
 
@@ -85,19 +133,20 @@ def placeholder_function(url, caller_module_name, func_name, *args, **kwargs):
 
 
 class base_forthright_client:
-    def __init__(self, url, caller_module_name, class_ptr):
+    def __init__(self, url, caller_module_name, class_ptr, safe_mode=False):
         self.url = os.path.join(url, 'forthright/')
         self.class_ptr = class_ptr
         self.caller_module_name = caller_module_name
+        self.safe_mode = safe_mode
 
     def import_functions(self, *func_names):
         for func_name in func_names:
-            named_placeholder_function = partial(placeholder_function, self.url, self.caller_module_name, func_name)
+            named_placeholder_function = partial(placeholder_function, self.url, self.safe_mode, self.caller_module_name, func_name)
             # Add function to class
             setattr(self.class_ptr, func_name, named_placeholder_function)
 
 
-def forthright_client(url):
+def forthright_client(url, safe_mode=False):
 
     # Get module name of caller
     frame = inspect.stack()[1]
@@ -107,7 +156,7 @@ def forthright_client(url):
     # Create new class (because we want to add functions to this class with setattr but not add them to a different forthright_client object)
     dynamic_class = type('forthright_client', (base_forthright_client,), {})
     # Instantiate this new class into an object and return the object
-    forthright_client_obj = dynamic_class(url, caller_module_name, dynamic_class)
+    forthright_client_obj = dynamic_class(url, caller_module_name, dynamic_class, safe_mode)
     return forthright_client_obj
 
 
@@ -116,9 +165,12 @@ def forthright_client(url):
 
 
 class forthright_server:
-    def __init__(self, app):
+    def __init__(self, app, safe_mode=False):
         self.app = app
         self.exported_functions_dict = {}
+        self.safe_mode = safe_mode
+
+        self.json_encoder = MyJsonEncoder()
 
         # Get module name of caller
         frame = inspect.stack()[1]
@@ -143,11 +195,22 @@ class forthright_server:
         def function_wrapper():
 
             data = request.get_data()
-            unserialized = unserialize_arguments_server(self.caller_module_name, data)
 
-            function_name = unserialized[0]
-            input_kwargs = unserialized[1]
-            input_args = unserialized[2:]
+            if self.safe_mode:
+
+                decoded = json.loads(data, object_hook=specify_type_hook)
+
+                function_name = decoded[0]
+                input_kwargs = decoded[1]
+                input_args = decoded[2:]
+
+            else:
+
+                unserialized = unserialize_arguments_server(self.caller_module_name, data)
+
+                function_name = unserialized[0]
+                input_kwargs = unserialized[1]
+                input_args = unserialized[2:]
 
             try:
                 outputs = self.exported_functions_dict[function_name](*input_args, **input_kwargs)
@@ -155,9 +218,15 @@ class forthright_server:
                 raise KeyError('forthright: %s() not found. Use forthright_server.export_functions(%s)' %(function_name, function_name))
 
 
-            outputs_serialized = serialize_arguments(outputs)
+            if self.safe_mode:
+                outputs_json_encoded = self.json_encoder.encode(outputs)
+                return Response(outputs_json_encoded, content_type='application/json')
 
-            return Response(outputs_serialized, content_type='application/octet-stream')
+            else:
+                outputs_serialized = serialize_arguments(outputs)
+                return Response(outputs_serialized, content_type='application/octet-stream')
+
+
 
 
     

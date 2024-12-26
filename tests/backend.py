@@ -11,7 +11,7 @@ from src.forthright.forthright import forthright_server
 from flask import Flask
 
 app = Flask(__name__)
-frs = forthright_server(app)
+frs = forthright_server(app, safe_mode=False)
 
 
 
