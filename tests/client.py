@@ -26,15 +26,15 @@ print(concat_output) # -> aaabbbccc
 
 
 if not b_safe_mode:
-	# test3 -- input and output are a custom object
-	class Person:
-	    def __init__(self, name, age):
-	        self.name = name
-	        self.age = age
+    # test3 -- input and output are a custom object
+    class Person:
+        def __init__(self, name, age):
+            self.name = name
+            self.age = age
 
-	p1 = Person('john', 38)
-	older_person = frc.increment_age(p1)
-	print(older_person.age) # -> 39
+    p1 = Person('john', 38)
+    older_person = frc.increment_age(p1)
+    print(older_person.age) # -> 39
 
 
 # test4 -- zero input arguments
