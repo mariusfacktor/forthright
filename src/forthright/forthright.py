@@ -26,12 +26,10 @@ class MyJsonEncoder(json.JSONEncoder):
 
 
 def specify_type_hook(obj):
-    if isinstance(obj, (str, int, float, bool, type(None))):
-        return obj
-    elif '__tuple__' in obj:
-        return tuple([specify_type_hook(e) for e in obj['items']])
+    if '__tuple__' in obj:
+        return tuple(obj['items'])
     elif '__set__' in obj:
-        return set([specify_type_hook(e) for e in obj['items']])
+        return set(obj['items'])
     else:
         return obj
 
