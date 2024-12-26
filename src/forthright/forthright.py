@@ -5,6 +5,7 @@ import os
 import io
 import inspect
 import json
+import base64
 
 
 # https://stackoverflow.com/questions/15721363/preserve-python-tuples-with-json
@@ -15,6 +16,8 @@ class MyJsonEncoder(json.JSONEncoder):
                 return {'__tuple__': True, 'items': [specify_type(e) for e in item]}
             elif isinstance(item, set):
                 return {'__set__': True, 'items': [specify_type(e) for e in item]}
+            elif isinstance(item, bytes):
+                return {'__bytes__': True, 'items': base64.b64encode(item).decode('utf8')}
             elif isinstance(item, list):
                 return [specify_type(e) for e in item]
             elif isinstance(item, dict):
@@ -30,6 +33,8 @@ def specify_type_hook(obj):
         return tuple(obj['items'])
     elif '__set__' in obj:
         return set(obj['items'])
+    elif '__bytes__' in obj:
+        return base64.b64decode(obj['items'])
     else:
         return obj
 

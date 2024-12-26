@@ -52,9 +52,9 @@ def optional_input(optional_arg=42):
     return optional_arg
 
 
-# test5 -- argument is a list 
-def input_list(arg_list):
-    return arg_list
+# test5 -- argument is an arbitrary type
+def input_list(arg):
+    return arg
 
 
 

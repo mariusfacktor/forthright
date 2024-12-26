@@ -42,8 +42,18 @@ default_val = frc.optional_input()
 print(default_val) # -> 42
 
 
-# test5 -- argument is a list 
-output_list = frc.input_list(['this', 'is', 'a', 'list'])
-print(output_list) # -> ['this', 'is', 'a', 'list']
+# test5 -- argument is an arbitrary type
+output = frc.input_list(['this', 'is', 'a', 'list'])
+print(output) # -> ['this', 'is', 'a', 'list']
+output = frc.input_list(b'Hello World')
+print(output) # -> b'Hello World'
+output = frc.input_list({5, 5, 6})
+print(output) # -> {5, 6}
+output = frc.input_list((1, 2, (3, 4), [5, 6], {7}, ()))
+print(output) # -> (1, 2, (3, 4), [5, 6], {7}, ())
+
+
+
+
 
 
