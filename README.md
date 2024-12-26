@@ -47,6 +47,7 @@ If an argument is a custom object, the class definition must be present in both 
 Warning: By default, this code deserializes pickled data on the server which is unsafe. There is an optional Safe Mode to instead send data with json, but this will prevent you from sending custom objects. To turn on Safe Mode, set `safe_mode=True` when instantiating both forthright_server and forthright_client:
 
 `frs = forthright_server(app, safe_mode=True)`
+
 `frc = forthright_client(url, safe_mode=True)`
 
 
