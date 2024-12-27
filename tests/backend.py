@@ -53,12 +53,12 @@ def optional_input(optional_arg=42):
 
 
 # test5 -- argument is an arbitrary type
-def input_list(arg):
+def send_back_same(arg):
     return arg
 
 
 
-frs.export_functions(calculate_values, concat_words, increment_age, optional_input, input_list)
+frs.export_functions(calculate_values, concat_words, increment_age, optional_input, send_back_same)
 
 
 if __name__ == '__main__':

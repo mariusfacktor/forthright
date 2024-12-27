@@ -12,7 +12,7 @@ url = 'http://127.0.0.1:8000'
 b_safe_mode = False
 
 frc = forthright_client(url, safe_mode=b_safe_mode)
-frc.import_functions('calculate_values', 'concat_words', 'increment_age', 'optional_input', 'input_list')
+frc.import_functions('calculate_values', 'concat_words', 'increment_age', 'optional_input', 'send_back_same')
 
 
 # test1 -- mixed type input arguments and multiple outputs
@@ -43,13 +43,13 @@ print(default_val) # -> 42
 
 
 # test5 -- argument is an arbitrary type
-output = frc.input_list(['this', 'is', 'a', 'list'])
+output = frc.send_back_same(['this', 'is', 'a', 'list'])
 print(output) # -> ['this', 'is', 'a', 'list']
-output = frc.input_list(b'Hello World')
+output = frc.send_back_same(b'Hello World')
 print(output) # -> b'Hello World'
-output = frc.input_list({5, 5, 6})
+output = frc.send_back_same({5, 5, 6})
 print(output) # -> {5, 6}
-output = frc.input_list((1, 2, (3, 4), [5, 6], {7}, ()))
+output = frc.send_back_same((1, 2, (3, 4), [5, 6], {7}, ()))
 print(output) # -> (1, 2, (3, 4), [5, 6], {7}, ())
 
 

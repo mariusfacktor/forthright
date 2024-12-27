@@ -105,12 +105,10 @@ def client_api_wrapper(url, safe_mode, caller_module_name, function_name, kwargs
         args_processed = serialize_arguments(function_name, kwargs, *args)
 
 
-
     response = requests.put(url, data=args_processed, headers=headers)
 
     if safe_mode:
         return_values = json.loads(response.content, object_hook=specify_type_hook)
-
     else:
         return_values = unserialize_arguments_client(caller_module_name, response.content)
 
@@ -128,7 +126,7 @@ def remote_call_decorator(func):
     return wrapper
 
 @remote_call_decorator
-def placeholder_function(url, caller_module_name, func_name, safe_mode, *args, **kwargs):
+def placeholder_function(url, safe_mode, caller_module_name, func_name, *args, **kwargs):
     pass
 
 
@@ -200,20 +198,13 @@ class forthright_server:
             data = request.get_data()
 
             if self.safe_mode:
-
-                decoded = json.loads(data, object_hook=specify_type_hook)
-
-                function_name = decoded[0]
-                input_kwargs = decoded[1]
-                input_args = decoded[2:]
-
+                unserialized = json.loads(data, object_hook=specify_type_hook)
             else:
-
                 unserialized = unserialize_arguments_server(self.caller_module_name, data)
 
-                function_name = unserialized[0]
-                input_kwargs = unserialized[1]
-                input_args = unserialized[2:]
+            function_name = unserialized[0]
+            input_kwargs = unserialized[1]
+            input_args = unserialized[2:]
 
             try:
                 outputs = self.exported_functions_dict[function_name](*input_args, **input_kwargs)
@@ -222,12 +213,14 @@ class forthright_server:
 
 
             if self.safe_mode:
-                outputs_json_encoded = self.json_encoder.encode(outputs)
-                return Response(outputs_json_encoded, content_type='application/json')
+                outputs_serialized = self.json_encoder.encode(outputs)
+                content_type = 'application/json'
 
             else:
                 outputs_serialized = serialize_arguments(outputs)
-                return Response(outputs_serialized, content_type='application/octet-stream')
+                content_type = 'application/octet-stream'
+
+            return Response(outputs_serialized, content_type=content_type)
 
 
 
