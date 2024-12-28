@@ -52,6 +52,12 @@ print(output) # -> {5, 6}
 output = frc.send_back_same((1, 2, (3, 4), [5, 6], {7}, ()))
 print(output) # -> (1, 2, (3, 4), [5, 6], {7}, ())
 
+if not b_safe_mode:
+	import numpy as np
+	arr = np.asarray([[11, 12, 13], [21, 22, 23]])
+	output = frc.send_back_same(arr)
+	print(type(output)) # -> <class 'numpy.ndarray'>
+
 
 
 
