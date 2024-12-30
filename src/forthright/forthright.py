@@ -120,53 +120,29 @@ def client_api_wrapper(url, safe_mode, caller_module_name, function_name, kwargs
         return_values = unserialize_arguments_client(caller_module_name, response.content)
 
     return return_values
-    
-
-def remote_call_decorator(func):
-
-    @wraps(func)
-    def wrapper(url, safe_mode, caller_module_name, func_name, *args, **kwargs):
-        # pass kwargs as a dict
-        result = client_api_wrapper(url, safe_mode, caller_module_name, func_name, kwargs, *args)
-        return result
-
-    return wrapper
-
-@remote_call_decorator
-def placeholder_function(url, safe_mode, caller_module_name, func_name, *args, **kwargs):
-    pass
 
 
-
-
-
-class base_forthright_client:
-    def __init__(self, url, caller_module_name, class_ptr, safe_mode=False):
+class forthright_client:
+    def __init__(self, url, safe_mode=False):
         self.url = os.path.join(url, 'forthright/')
-        self.class_ptr = class_ptr
-        self.caller_module_name = caller_module_name
         self.safe_mode = safe_mode
 
-    def import_functions(self, *func_names):
-        for func_name in func_names:
-            named_placeholder_function = partial(placeholder_function, self.url, self.safe_mode, self.caller_module_name, func_name)
-            # Add function to class
-            setattr(self.class_ptr, func_name, named_placeholder_function)
+        # Get module name of caller
+        frame = inspect.stack()[1]
+        caller_module = inspect.getmodule(frame[0])
+        caller_module_name = caller_module.__name__
 
+        self.caller_module_name = caller_module_name
 
-def forthright_client(url, safe_mode=False):
+    # https://medium.com/@taraszhere/coding-remote-procedure-call-rpc-with-python-3b14a7d00ac8
+    # Call arbitrary function name
+    def __getattr__(self, __name: str):
 
-    # Get module name of caller
-    frame = inspect.stack()[1]
-    caller_module = inspect.getmodule(frame[0])
-    caller_module_name = caller_module.__name__
+        def execute(*args, **kwargs):
+            result = client_api_wrapper(self.url, self.safe_mode, self.caller_module_name, __name, kwargs, *args)
+            return result
 
-    # Create new class (because we want to add functions to this class with setattr but not add them to a different forthright_client object)
-    dynamic_class = type('forthright_client', (base_forthright_client,), {})
-    # Instantiate this new class into an object and return the object
-    forthright_client_obj = dynamic_class(url, caller_module_name, dynamic_class, safe_mode)
-    return forthright_client_obj
-
+        return execute
 
 
 
@@ -190,7 +166,7 @@ class forthright_server:
         self.initialize_api()
 
 
-    def export_functions(self, *funcs):
+    def register_functions(self, *funcs):
 
         for func in funcs:
             self.exported_functions_dict[func.__name__] = func
@@ -216,7 +192,7 @@ class forthright_server:
             try:
                 outputs = self.exported_functions_dict[function_name](*input_args, **input_kwargs)
             except KeyError:
-                raise KeyError('forthright: %s() not found. Use forthright_server.export_functions(%s)' %(function_name, function_name))
+                raise KeyError('forthright: %s() not found. Use forthright_server.register_functions(%s)' %(function_name, function_name))
 
 
             if self.safe_mode:

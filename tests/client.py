@@ -12,7 +12,6 @@ url = 'http://127.0.0.1:8000'
 b_safe_mode = False
 
 frc = forthright_client(url, safe_mode=b_safe_mode)
-frc.import_functions('calculate_values', 'concat_words', 'increment_age', 'optional_input', 'send_back_same')
 
 
 # test1 -- mixed type input arguments and multiple outputs

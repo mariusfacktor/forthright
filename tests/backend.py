@@ -58,7 +58,7 @@ def send_back_same(arg):
 
 
 
-frs.export_functions(calculate_values, concat_words, increment_age, optional_input, send_back_same)
+frs.register_functions(calculate_values, concat_words, increment_age, optional_input, send_back_same)
 
 
 if __name__ == '__main__':
